@@ -100,13 +100,14 @@ public class BasicConcepts {
 
         boolean[] sieve = new boolean[n + 1];
         for (int i = 2; i <= n; i++) {
-            sieve[i] = true;
+            sieve[i] = true; //assume from 2 to n everything is prime
         }
 
-        for (int i = 2; i * i <= n; i++) {
-            if (sieve[i]) {
-                for (int j = i * i; j <= n; j += i) {
+        for (int i = 2; i * i <= n; i++) { //iterate upto square root of n since the max divisor of n will be half of n
+            if (sieve[i]) { //if potential prime
+                for (int j = i * i; j <= n; j += i) { //start from the numbers square, iterate upto of n and increment such that you are going to its multiple
                     sieve[j] = false;
+                    // cross out all the multiples of this number
                 }
             }
         }

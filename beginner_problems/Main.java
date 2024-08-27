@@ -5,7 +5,7 @@ import java.util.Vector;
 
 public class Main {
     public static void main(String[] args) {
-        patters();
+        patterns();
         basicConcepts();
         basicArray();
         basicString();
@@ -149,7 +149,7 @@ public class Main {
         Arrays.stream(basicConcepts.divisors(12)).forEach(System.out::println);
     }
 
-    private static void patters() {
+    private static void patterns() {
         Patterns patterns = new Patterns();
         patterns.pattern1(5);
         patterns.pattern2(5);

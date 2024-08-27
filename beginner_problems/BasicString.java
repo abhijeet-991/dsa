@@ -1,7 +1,5 @@
 package beginner_problems;
 
-import javax.swing.*;
-import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.stream.Collectors;
 
