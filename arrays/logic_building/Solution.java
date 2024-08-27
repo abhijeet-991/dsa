@@ -52,20 +52,28 @@ public class Solution {
             // Check if the current element at index i is different from the element at index j.
             // nums[j] is the last unique element found so far.
             // nums[i] is being checked to see if it's a new unique element.
+
+            // Example: For array nums = [1, 1, 2, 3, 3], initially nums[j] = nums[0] = 1
+            // and nums[i] = nums[0] = 1.
+            // As i moves forward, this comparison helps determine if nums[i] is unique.
+
             if (nums[i] != nums[j]) {
                 // If nums[i] is different from nums[j], it means nums[i] is a new unique element.
                 // Place this new unique element in the position immediately after the last unique element.
+                // Example: If nums[i] = 2 and nums[j] = 1, nums[j + 1] = nums[1] will be set to 2.
                 nums[j + 1] = nums[i]; // Move nums[i] to position j + 1.
                 // Increment j to point to the next position for any future unique elements.
                 j++; // j now points to the new last unique element.
             }
             // Always move the i pointer to continue checking the next element.
             // We need to examine all elements to ensure all duplicates are removed.
+            // Example: If nums[i] = 3 and nums[j] = 2, nums[2] will be set to 3.
             i++;
         }
 
         // Return the length of the array containing only unique elements.
         // j is the index of the last unique element found, so j + 1 gives the total count of unique elements.
+        // Example: If nums = [1, 2, 3, 4, 5], j = 4 at the end, so return j + 1 = 5.
         return j + 1;
     }
 

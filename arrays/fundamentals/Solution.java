@@ -132,26 +132,40 @@ public class Solution {
         k = k % n;
 
         // Reverse the first k elements.
-        // This places elements that will eventually move to the end of the array into their reversed positions.
+        // This step reverses the portion of the array that will end up at the end
+        // after the rotation. Reversing it now ensures that when we finally reverse
+        // the entire array, this portion will be in the correct order.
+        // Example: With nums = [1, 2, 3, 4, 5, 6, 7] and k = 3,
+        // reversing [1, 2, 3] results in [3, 2, 1, 4, 5, 6, 7].
         reverse(nums, 0, k - 1);
 
         // Reverse the remaining elements from index k to the end of the array.
-        // This prepares the part of the array that will be shifted to the beginning.
+        // This step prepares the rest of the array to be correctly ordered
+        // when the whole array is reversed. Essentially, it reverses the segment
+        // that will move to the beginning of the array after rotation.
+        // Example: With nums = [3, 2, 1, 4, 5, 6, 7],
+        // reversing [4, 5, 6, 7] results in [3, 2, 1, 7, 6, 5, 4].
         reverse(nums, k, n - 1);
 
         // Reverse the entire array.
-        // This final reverse puts all elements into their final rotated positions.
+        // This final reversal combines the two previously reversed segments into the
+        // correct order for the rotated array. It puts all elements into their
+        // final rotated positions.
+        // Example: With nums = [3, 2, 1, 7, 6, 5, 4],
+        // reversing the whole array results in [4, 5, 6, 7, 1, 2, 3],
+        // which is the array rotated right by 3 positions.
         reverse(nums, 0, n - 1);
     }
 
-    // Helper method to reverse a portion of the array from start to end indices
+    // Helper method to reverse a portion of the array from start index to end index (inclusive).
     private void reverse(int[] nums, int start, int end) {
-        // Swap elements from the start index to the end index until the pointers meet in the middle.
-        // This effectively reverses the segment of the array.
         while (start < end) {
+            // Swap the elements at start and end indices.
             int temp = nums[start];
             nums[start] = nums[end];
             nums[end] = temp;
+
+            // Move towards the middle of the array.
             start++;
             end--;
         }
