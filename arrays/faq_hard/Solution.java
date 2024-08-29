@@ -178,7 +178,105 @@ public class Solution {
         return new int[] { (int) x, (int) y };
     }
 
-    public long numberOfInversions(int[] nums) {
-
+    public int numberOfInversions(int[] nums) {
+        // We use merge sort because it efficiently sorts an array while also counting inversions.
+        // An inversion is a pair of elements (i, j) such that i < j and nums[i] > nums[j].
+        // Merge sort works well for this problem because, during the merge step,
+        // we can count how many elements from the right half are smaller than an element from the left half.
+        // This allows us to count all the inversions in O(n log n) time, which is much faster than the O(n^2)
+        // time that a brute-force approach would take.
+        // Example: If nums = [2, 3, 8, 6, 1], merge sort will sort the array and count inversions like:
+        // (2, 1), (3, 1), (8, 6), (8, 1), (6, 1)
+        return mergeSort(nums, 0, nums.length - 1);
     }
+
+    // Merge sort function that returns the number of inversions.
+    private int mergeSort(int[] nums, int low, int hi) {
+        // Base case: If the subarray has less than or equal to 1 element, it's already sorted.
+        // No inversions are possible in this case, so return 0.
+        if (low >= hi) {
+            return 0;
+        }
+
+        // Find the middle point to divide the array into two halves.
+        // This is essential for the divide-and-conquer approach of merge sort.
+        int mid = low + (hi - low) / 2;
+
+        // Recursively sort and count inversions in the left half.
+        int leftInversions = mergeSort(nums, low, mid);
+
+        // Recursively sort and count inversions in the right half.
+        int rightInversions = mergeSort(nums, mid + 1, hi);
+
+        // Merge the two halves together and count the inversions that occur between the two halves.
+        int mergeInversions = mergeArray(nums, low, mid, hi);
+
+        // The total number of inversions is the sum of inversions in the left half, the right half,
+        // and the inversions counted during the merge step.
+        return leftInversions + rightInversions + mergeInversions;
+    }
+
+    // Merging function that counts inversions between the two halves.
+    private int mergeArray(int[] nums, int low, int mid, int hi) {
+        // Calculate the sizes of the two subarrays to be merged.
+        int n1 = mid - low + 1; // Number of elements in the left half
+        int n2 = hi - mid; // Number of elements in the right half
+
+        // Temporary arrays to hold the left and right subarrays.
+        int[] arr1 = new int[n1];
+        int[] arr2 = new int[n2];
+
+        // Copy the left half into arr1.
+        for (int i = 0; i < n1; i++) {
+            arr1[i] = nums[low + i];
+        }
+
+        // Copy the right half into arr2.
+        for (int j = 0; j < n2; j++) {
+            arr2[j] = nums[mid + 1 + j];
+        }
+
+        // Merging process: we will compare elements from arr1 and arr2 and
+        // place the smaller element back into the original array (nums).
+        int i = 0, j = 0, k = low;
+        int inversions = 0;
+
+        // Compare each element of the left half with the right half.
+        // If an element in arr1 is smaller or equal to an element in arr2,
+        // it means no inversion for that element.
+        // Otherwise, if arr2[j] < arr1[i], then all remaining elements in arr1
+        // (from i to n1-1) are greater than arr2[j], so count these as inversions.
+        while (i < n1 && j < n2) {
+            if (arr1[i] <= arr2[j]) {
+                nums[k] = arr1[i];
+                i++;
+            } else {
+                nums[k] = arr2[j];
+                // All elements from arr1[i] to arr1[n1-1] are greater than arr2[j],
+                // so they form inversions with arr2[j].
+                inversions += (n1 - i);
+                j++;
+            }
+            k++;
+        }
+
+        // Copy any remaining elements of arr1, if any.
+        while (i < n1) {
+            nums[k] = arr1[i];
+            i++;
+            k++;
+        }
+
+        // Copy any remaining elements of arr2, if any.
+        while (j < n2) {
+            nums[k] = arr2[j];
+            j++;
+            k++;
+        }
+
+        // Return the number of inversions counted during the merge step.
+        return inversions;
+    }
+
+
 }
