@@ -1,6 +1,7 @@
 package arrays.faq_hard;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Solution {
@@ -278,5 +279,205 @@ public class Solution {
         return inversions;
     }
 
+    public int reversePairs(int[] nums) {
+        // Start the merge sort process and count reverse pairs over the entire range of the array
+        // Example: For array [1, 3, 2, 3, 1], this call will handle the range from index 0 to 4
+        return mergeSortHelper(nums, 0, nums.length - 1);
+    }
 
+    // Recursive method to sort and count reverse pairs in the range [low, hi]
+    private int mergeSortHelper(int[] nums, int low, int hi) {
+        int cnt = 0; // Initialize count of reverse pairs in this range
+
+        // Base case: If the range is invalid or has only one element, there are no reverse pairs
+        // Example: For range [0, 0], no pairs can be counted
+        if (low >= hi) {
+            return 0;
+        }
+
+        // Calculate the midpoint to divide the array into two halves
+        // Example: For range [0, 4], mid is calculated as (0 + 4) / 2 = 2
+        int mid = low + (hi - low) / 2;
+
+        // Recursively sort the left half of the array and count reverse pairs within that half
+        // Example: For range [0, 2] in array [1, 3, 2, 3, 1], this will sort [1, 3, 2] and count pairs in that subarray
+        cnt += mergeSortHelper(nums, low, mid);
+
+        // Recursively sort the right half of the array and count reverse pairs within that half
+        // Example: For range [3, 4] in array [1, 3, 2, 3, 1], this will sort [3, 1] and count pairs in that subarray
+        cnt += mergeSortHelper(nums, mid + 1, hi);
+
+        // Count reverse pairs where one element is in the left half and the other is in the right half
+        // Example: For left half [1, 3] and right half [2, 3, 1], this will count pairs such as (3, 1)
+        cnt += countPairHelper(nums, low, mid, hi);
+
+        // Merge the two sorted halves into a single sorted array
+        // Example: Merge sorted [1, 2, 3] and [1, 3] into [1, 1, 2, 3, 3]
+        mergeArrayHelper(nums, low, mid, hi);
+
+        // Return the total count of reverse pairs found in the range [low, hi]
+        return cnt;
+    }
+
+    // Helper method to count reverse pairs between two sorted halves
+    private int countPairHelper(int[] nums, int low, int mid, int hi) {
+        int j = mid + 1; // Pointer to start scanning the right half of the array
+        int cnt = 0;    // Initialize count of reverse pairs
+
+        // Traverse each element in the left half of the array
+        // Example: For left half [1, 2, 3] and right half [1, 2, 3], i will be 0, 1, 2
+        for (int i = low; i <= mid; i++) {
+            // Move pointer `j` in the right half until nums[i] <= 2 * nums[j]
+            // Example: For nums[i] = 3 and nums[j] = 1, move `j` to find nums[j] such that 3 <= 2 * nums[j]
+            while (j <= hi && nums[i] > 2 * nums[j]) {
+                j++; // Increment `j` to find valid pairs
+            }
+            // The number of valid reverse pairs for nums[i] is the number of elements from mid+1 to j-1
+            // because all these elements in the right half are less than nums[i] / 2
+            // Example: For nums[i] = 3 and `j` points to 2, count all elements from nums[mid+1] to nums[j-1]
+            cnt += (j - (mid + 1));
+        }
+
+        // Return the count of reverse pairs found in this range
+        return cnt;
+    }
+
+    // Helper method to merge two sorted halves of the array into a single sorted array
+    private static void mergeArrayHelper(int[] nums, int left, int mid, int right) {
+        int n1 = mid - left + 1; // Length of the left half
+        int n2 = right - mid;    // Length of the right half
+
+        // Create temporary arrays to hold elements of the left and right halves
+        int[] leftArray = new int[n1];
+        int[] rightArray = new int[n2];
+
+        // Copy elements from the original array into the left temporary array
+        System.arraycopy(nums, left, leftArray, 0, n1);
+        // Copy elements from the original array into the right temporary array
+        System.arraycopy(nums, mid + 1, rightArray, 0, n2);
+
+        int i = 0, j = 0, k = left; // Pointers for leftArray, rightArray, and nums respectively
+
+        // Merge the two halves into the original array
+        // Compare elements from leftArray and rightArray and copy the smaller one to nums
+        while (i < n1 && j < n2) {
+            if (leftArray[i] <= rightArray[j]) {
+                nums[k++] = leftArray[i++]; // Copy smaller element from leftArray to nums
+            } else {
+                nums[k++] = rightArray[j++]; // Copy smaller element from rightArray to nums
+            }
+        }
+
+        // Copy any remaining elements from leftArray into nums
+        // Example: If leftArray is [2, 3] and rightArray is exhausted, add [2, 3] to nums
+        while (i < n1) {
+            nums[k++] = leftArray[i++];
+        }
+
+        // Copy any remaining elements from rightArray into nums
+        // Example: If rightArray is [4, 5] and leftArray is exhausted, add [4, 5] to nums
+        while (j < n2) {
+            nums[k++] = rightArray[j++];
+        }
+    }
+
+    public int maxProduct(int[] nums) {
+        // If the array has only one element, the maximum product is the element itself.
+        // Example: nums = [-2], then max product = -2
+        if (nums.length == 1) {
+            return nums[0];
+        }
+
+        // Initialize prefix and suffix to 1. These will track the product of elements
+        // from the start and the end of the array, respectively.
+        int prefix = 1;
+        int suffix = 1;
+
+        // Initialize the answer (maximum product found so far) to 0.
+        // It will store the maximum product found during the iteration.
+        int ans = 0;
+
+        // Iterate through the array to calculate prefix and suffix products.
+        // We'll check both the forward and backward products simultaneously.
+        for (int i = 0 ; i < nums.length; i++) {
+            // If the prefix product becomes zero, reset it to 1.
+            // This is because multiplying by zero will always give zero,
+            // so we need to reset to avoid continuing with an invalid product.
+            if (prefix == 0) prefix = 1;
+
+            // Similarly, reset the suffix if it becomes zero for the same reason.
+            if (suffix == 0) suffix = 1;
+
+            // Multiply the prefix with the current element from the front.
+            // Example: nums = [2, -3, 4], i = 0, prefix = 1 * 2 = 2
+            // i = 1, prefix = 2 * -3 = -6, i = 2, prefix = -6 * 4 = -24
+            prefix = prefix * nums[i];
+
+            // Multiply the suffix with the current element from the end.
+            // Example: nums = [2, -3, 4], i = 0, suffix = 1 * 4 = 4
+            // i = 1, suffix = 4 * -3 = -12, i = 2, suffix = -12 * 2 = -24
+            suffix = suffix * nums[nums.length-i-1];
+
+            // The maximum product at any point could be either the current prefix,
+            // the current suffix, or the previously recorded maximum product.
+            // Example: nums = [2, -3, 4], ans = max(0, max(2, 4)) = 4
+            // ans = max(4, max(-6, -12)) = 4
+            ans = Math.max(ans, Math.max(prefix, suffix));
+        }
+
+        // Return the maximum product found during the iteration.
+        return ans;
+    }
+
+    public void merge(int[] nums1, int m, int[] nums2, int n) {
+        // Pointer to the end of the valid portion of nums1
+        int i = m - 1;
+        // Pointer to the end of nums2
+        int j = n - 1;
+        // Pointer to the end of the entire nums1 array (including extra space)
+        int k = m + n - 1;
+
+        // We will merge nums2 into nums1 from the end towards the beginning.
+        // This avoids overwriting any elements in nums1 before we have a chance to move them.
+        while (i >= 0 && j >= 0) {
+            // Compare elements from nums1 and nums2
+            if (nums1[i] > nums2[j]) {
+                // If the current element in nums1 is greater, place it at the end of nums1
+                nums1[k--] = nums1[i--];
+            } else {
+                // If the current element in nums2 is greater or equal, place it at the end of nums1
+                nums1[k--] = nums2[j--];
+            }
+        }
+
+        // If there are remaining elements in nums2 that haven't been merged yet
+        // We only need to copy remaining elements from nums2 because if nums1 still has elements,
+        // they are already in their correct place.
+        while (j >= 0) {
+            // Copy the remaining elements from nums2 into nums1
+            nums1[k--] = nums2[j--];
+        }
+
+        // Remaining elements in nums1 (if any) are already in place and sorted.
+        // No additional action is needed for them.
+
+        // Example walkthrough:
+        // Given nums1 = [1, 3, 5, 0, 0, 0], m = 3, nums2 = [2, 4, 6], n = 3
+        // Initial pointers: i = 2, j = 2, k = 5
+        // After merging:
+        // 1. Compare nums1[2] (5) with nums2[2] (6). Since 6 > 5, place 6 in nums1[5].
+        // 2. Compare nums1[2] (5) with nums2[1] (4). Since 5 > 4, place 5 in nums1[4].
+        // 3. Compare nums1[1] (3) with nums2[1] (4). Since 4 > 3, place 4 in nums1[3].
+        // 4. Compare nums1[1] (3) with nums2[0] (2). Since 3 > 2, place 3 in nums1[2].
+        // 5. Copy remaining element 2 from nums2 to nums1[1].
+        // Final nums1: [1, 2, 3, 4, 5, 6]
+
+        // Why this method works efficiently:
+        // 1. **Avoid Overwriting**: By merging from the end of nums1, we ensure that we do not overwrite elements
+        //    in nums1 that we still need to consider.
+        // 2. **Optimal Performance**: This approach runs in O(m + n) time and uses O(1) extra space,
+        //    making it efficient for merging sorted arrays in-place.
+        // 3. **Handling Remaining Elements**: After the initial merge loop, if there are any remaining
+        //    elements in nums2, they are copied directly because nums1’s remaining elements are already in place.
+    }
 }

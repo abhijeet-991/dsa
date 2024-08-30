@@ -1,5 +1,7 @@
 package sorting;
 
+import java.util.Arrays;
+
 public class SortUtil {
 
     public static int[] selectionSort(int[] nums) {
