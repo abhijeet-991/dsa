@@ -592,7 +592,7 @@ public class Solution {
             // positions = [1, 2, 8, 4, 9], k = 3
             // After sorting: [1, 2, 4, 8, 9]
             // Initial search range: s = 0, e = 8 (max - min)
-            // Mid distance (m) could be tested like 4 or 5 to see if 3 cows can be placed 4 or 5 units apart.
+            // mid-distance (m) could be tested like 4 or 5 to see if 3 cows can be placed 4 or 5 units apart.
         }
 
         return ans; // Return the largest minimum distance where cows can be placed
@@ -621,4 +621,449 @@ public class Solution {
         // The valid placements are at positions 1, 4, and 9 (with distances of 3 and 5).
     }
 
+    public int findPages(int[] bookPages, int totalStudents) {
+        // Initialize result as -1, meaning if we can't allocate, we'll return this.
+        int result = -1;
+
+        // If the number of students is greater than the number of books, return -1.
+        // This is because it's impossible to allocate books to more students than we have.
+        if (totalStudents > bookPages.length) {
+            return result;
+        }
+
+        // The minimum number of pages to consider is the book with the maximum pages,
+        // because each student must read at least one book, so this is the lowest possible allocation.
+        int minPages = Arrays.stream(bookPages).max().getAsInt();
+
+        // The maximum number of pages would be if one student had to read all the books,
+        // which is the total sum of all book pages.
+        int maxPages = Arrays.stream(bookPages).sum();
+
+        // Perform binary search between the minimum and maximum number of pages.
+        while (minPages <= maxPages) {
+            // Find the middle number of pages that could be allocated.
+            int midPages = minPages + (maxPages - minPages) / 2;
+
+            // Check how many students are needed if each student is allocated at most 'midPages' pages.
+            // If the number of students needed is less than or equal to the given number of students,
+            // then 'midPages' is a possible solution, so we store it and try to find a smaller answer.
+            if (allocateBooksToStudents(bookPages, midPages) <= totalStudents) {
+                result = midPages; // Store the valid solution.
+                maxPages = midPages - 1; // Try to minimize further by checking lower pages.
+            } else {
+                minPages = midPages + 1; // If more students are required, increase the pages limit.
+            }
+
+        /*
+        Example:
+        - bookPages = [12, 34, 67, 90], totalStudents = 2
+        - minPages = 90 (max of array), maxPages = 203 (sum of array)
+        - midPages = (90 + 203) / 2 = 146
+        - Check if it's possible to allocate books so no student reads more than 146 pages.
+        */
+        }
+
+        // Return the minimum number of pages found.
+        return result;
+    }
+
+    // Helper function to determine how many students are needed if each student can read at most 'maxPages' pages.
+    private int allocateBooksToStudents(int[] bookPages, int maxPagesPerStudent) {
+        int studentsRequired = 1; // Start with 1 student.
+        int currentPageAllocation = bookPages[0]; // Assign the first book to the first student.
+
+        // Iterate through each book.
+        for (int i = 1; i < bookPages.length; i++) {
+            // If adding this book to the current student's total pages doesn't exceed 'maxPagesPerStudent',
+            // assign this book to the current student.
+            if (bookPages[i] + currentPageAllocation <= maxPagesPerStudent) {
+                currentPageAllocation += bookPages[i];
+            } else {
+                // Otherwise, allocate this book to a new student and reset the currentPageAllocation.
+                studentsRequired++; // Increase the student count.
+                currentPageAllocation = bookPages[i]; // Start a new allocation with this book.
+            }
+
+        /*
+        Example:
+        - maxPagesPerStudent = 146
+        - bookPages = [12, 34, 67, 90]
+        - Allocate 12 + 34 = 46, next 46 + 67 = 113, but adding 90 exceeds 146,
+          so allocate 90 to a new student. Total students required = 2.
+        */
+        }
+
+        // Return the total number of students required.
+        return studentsRequired;
+    }
+
+    public int findPeakElement(int[] nums) {
+        // If the array has only one element, that element is a peak.
+        // Example: nums = [3] -> peak is 3 (index 0).
+        if (nums.length == 1) {
+            return 0; // Return index 0 because it's the only element.
+        }
+
+        // If the first element is greater than the second element, it must be a peak.
+        // Example: nums = [5, 3, 2] -> peak is 5 (index 0).
+        if (nums[0] > nums[1]) {
+            return 0; // Return index 0 because nums[0] is larger than nums[1].
+        }
+
+        // If the last element is greater than the second last element, it must be a peak.
+        // Example: nums = [1, 2, 3, 5] -> peak is 5 (index 3).
+        if (nums[nums.length - 1] > nums[nums.length - 2]) {
+            return nums.length - 1; // Return the last index because it's larger than its neighbor.
+        }
+
+        // Binary search initialization:
+        // Search for a peak in the range from the second element to the second last element.
+        int start = 1; // We already checked the first element, so start from index 1.
+        int end = nums.length - 2; // We already checked the last element, so end at index nums.length-2.
+
+        // Perform binary search in the middle of the array to find a peak element.
+        while (start <= end) {
+            int mid = start + (end - start) / 2; // Calculate the mid-point of the current range.
+
+            // Check if the middle element is greater than its neighbors (a peak).
+            // If true, mid is a peak element.
+            if (nums[mid] > nums[mid - 1] && nums[mid] > nums[mid + 1]) {
+                return mid; // Return the index of the peak element.
+            }
+
+            // If nums[mid] is greater than its left neighbor but less than its right neighbor,
+            // it means the peak lies on the right side. Example: nums = [1, 2, 3, 1], mid = 1.
+            // Since nums[mid] < nums[mid + 1], move right to find the peak.
+            else if (nums[mid] > nums[mid + 1]) {
+                end = mid - 1; // Move to the left half, as a peak exists there.
+            }
+
+            // If nums[mid] is greater than its right neighbor but less than its left neighbor,
+            // the peak lies on the left side. Example: nums = [1, 3, 2], mid = 1.
+            // Since nums[mid] > nums[mid + 1], move left to find the peak.
+            else if (nums[mid] > nums[mid - 1]) {
+                start = mid + 1; // Move to the right half, as a peak exists there.
+            }
+
+            // In other cases, continue narrowing the search space based on comparison.
+            else {
+                end = mid - 1; // Continue reducing the search space.
+            }
+
+        /*
+        Example:
+        - nums = [1, 2, 3, 1]
+        - Initial start = 1, end = 2, mid = (1 + 2) / 2 = 1
+        - nums[mid] = 2, nums[mid-1] = 1, nums[mid+1] = 3
+        - Since 2 < 3, move to the right half: start = mid + 1 = 2
+        - Now mid = 2, and nums[mid] = 3 is a peak because it's greater than both neighbors.
+        */
+        }
+
+        // Return -1 in case no peak is found (though it won't happen in this problem).
+        return -1;
+    }
+
+    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
+        // Ensure that we always binary search on the smaller array (nums1) to reduce complexity.
+        int n = nums1.length;
+        int m = nums2.length;
+
+        // If nums1 is larger than nums2, swap them so that we binary search on the smaller array.
+        // This makes the algorithm more efficient.
+        if (n > m) {
+            return findMedianSortedArrays(nums2, nums1);  // Swap and recur to keep binary search on the smaller array.
+        }
+
+        int low = 0;      // Start of the binary search on nums1.
+        int high = n;     // End of the binary search on nums1 (not nums1.length-1, because we are considering partitions).
+
+        // We are partitioning the two arrays such that all elements on the left of the partition
+        // are less than or equal to all elements on the right. We binary search on nums1 to find this partition.
+        while (low <= high) {
+            // Partition in nums1: mid-point for the first array
+            int partition1 = (low + high) / 2;
+
+            //The formula (n + m + 1) / 2 ensures that the left half of both arrays combined
+            //has one more element if the total length is odd. We add +1 to handle odd-length cases.
+            int partition2 = (n + m + 1) / 2 - partition1;
+
+            // Edge case: If partition1 is at the start, there are no elements on the left side of nums1
+            int maxLeft1 = (partition1 == 0) ? Integer.MIN_VALUE : nums1[partition1 - 1];
+
+            // Edge case: If partition1 is at the end, there are no elements on the right side of nums1
+            int minRight1 = (partition1 == n) ? Integer.MAX_VALUE : nums1[partition1];
+
+            // Similarly, handle the left and right elements for nums2
+            int maxLeft2 = (partition2 == 0) ? Integer.MIN_VALUE : nums2[partition2 - 1];
+            int minRight2 = (partition2 == m) ? Integer.MAX_VALUE : nums2[partition2];
+
+            // Intuition:
+            // 1. All elements on the left of partition1 and partition2 must be less than or equal to all elements on the right.
+            // 2. If maxLeft1 <= minRight2 and maxLeft2 <= minRight1, then the correct partition is found.
+
+            if (maxLeft1 <= minRight2 && maxLeft2 <= minRight1) {
+                // If the total number of elements (n + m) is even, the median is the average of the two middle elements.
+                if ((n + m) % 2 == 0) {
+                    return (Math.max(maxLeft1, maxLeft2) + Math.min(minRight1, minRight2)) / 2.0;
+                }
+                // If the total number of elements is odd, the median is the larger of the two left elements.
+                else {
+                    return Math.max(maxLeft1, maxLeft2);
+                }
+            }
+            // If maxLeft1 > minRight2, it means we have too many large elements on the left side of nums1.
+            // So, we need to move partition1 to the left by reducing the 'high' boundary.
+            else if (maxLeft1 > minRight2) {
+                high = partition1 - 1;
+            }
+            // Otherwise, move partition1 to the right by increasing the 'low' boundary.
+            else {
+                low = partition1 + 1;
+            }
+
+            // Example walkthrough:
+            // nums1 = [1, 3, 8], nums2 = [7, 9, 10, 11]
+            // n = 3, m = 4
+            // Partition positions initially: partition1 = (0+3)/2 = 1, partition2 = (3+4+1)/2 - partition1 = 2
+            // maxLeft1 = nums1[0] = 1, minRight1 = nums1[1] = 3
+            // maxLeft2 = nums2[1] = 9, minRight2 = nums2[2] = 10
+            // maxLeft1 <= minRight2 and maxLeft2 <= minRight1 => valid partition, so compute the median.
+        }
+
+        // If no valid partition is found (though this should never happen with valid input), return an error value.
+        return -1;
+    }
+
+    public int kthElement(int[] a, int[] b, int k) {
+        // Get the lengths of the arrays a and b
+        int n = a.length;
+        int m = b.length;
+
+        // Ensure that we always binary search on the smaller array for efficiency.
+        // If 'a' is longer than 'b', we swap the arrays to maintain the condition n <= m.
+        // This reduces the search space and ensures better performance.
+        if (n > m) {
+            return kthElement(b, a, k); // Recursively swap and call again
+        }
+
+        // Define the binary search range for 'a'.
+        // We are finding the partition for 'a' within this range.
+        // low starts at max(0, k-m) because there must be at least 'k-m' elements from 'a' to ensure
+        // that partitionB is valid.
+        // high ends at min(n, k) because there can be at most 'k' elements taken from 'a'.
+        int low = Math.max(0, k - m);
+        int high = Math.min(n, k);
+
+        // Perform binary search
+        while (low <= high) {
+            // Partition the array 'a'. We use binary search to choose the partition point.
+            // partitionA is the number of elements we are taking from array 'a'.
+            int partitionA = (low + high) / 2;
+
+            // partitionB is automatically determined based on the total 'k'.
+            // We want to select a total of 'k' elements from both arrays, so if partitionA elements
+            // are taken from 'a', then 'partitionB = k - partitionA' must be taken from 'b'.
+            int partitionB = k - partitionA;
+
+            // Edge case: if partitionA is 0, there are no elements on the left side of the partition in 'a',
+            // so we treat maxLeftA as negative infinity. Otherwise, it is the element just before the partition.
+            int maxLeftA = (partitionA == 0) ? Integer.MIN_VALUE : a[partitionA - 1];
+
+            // Edge case: if partitionA equals n, there are no elements on the right side of the partition in 'a',
+            // so we treat minRightA as positive infinity. Otherwise, it is the element just after the partition.
+            int minRightA = (partitionA == n) ? Integer.MAX_VALUE : a[partitionA];
+
+            // Similar logic for array 'b':
+            // If partitionB is 0, it means there are no elements on the left side of the partition in 'b',
+            // so maxLeftB is negative infinity. Otherwise, it's the element just before the partition.
+            int maxLeftB = (partitionB == 0) ? Integer.MIN_VALUE : b[partitionB - 1];
+
+            // If partitionB equals m, no elements remain on the right side of the partition in 'b',
+            // so minRightB is positive infinity. Otherwise, it's the element just after the partition.
+            int minRightB = (partitionB == m) ? Integer.MAX_VALUE : b[partitionB];
+
+            // Now we check if the current partition is valid:
+            // We need maxLeftA <= minRightB and maxLeftB <= minRightA.
+            // This ensures that all elements on the left are smaller than those on the right.
+            if (maxLeftA <= minRightB && maxLeftB <= minRightA) {
+                // If the partition is correct, return the largest element from the left half.
+                // We want the 'k'th element, so it will be the maximum of the two left side elements.
+                return Math.max(maxLeftA, maxLeftB);
+            }
+            // If maxLeftA > minRightB, it means we have too many elements from 'a' in the left partition.
+            // We need to reduce the number of elements from 'a', so we move the partition to the left.
+            else if (maxLeftA > minRightB) {
+                high = partitionA - 1;
+            }
+            // If maxLeftB > minRightA, it means we need more elements from 'a' in the left partition.
+            // Move the partition to the right by increasing low.
+            else {
+                low = partitionA + 1;
+            }
+
+            // Example:
+            // a = [2, 3, 6, 7, 9], b = [1, 4, 8, 10], k = 5
+            // We want to find the 5th smallest element from both arrays.
+            // Partition the arrays such that we have 5 elements on the left (total).
+            // We keep adjusting the partitions using binary search until we find the correct one.
+        }
+
+        // If we exit the loop without finding the kth element, return -1 (this should never happen in a valid input).
+        return -1;
+    }
+
+    // if the maximum allowed distance between any two consecutive stations is `dist`.
+    private int numberOfGasStationsRequired(double dist, int[] arr) {
+        int n = arr.length;  // Number of gas stations in the original array
+        int cnt = 0;  // Counter for the number of new gas stations required
+
+        // Iterate over each pair of consecutive gas stations
+        for (int i = 1; i < n; i++) {
+
+            // Calculate the number of gas stations required between arr[i-1] and arr[i]
+            // We find how many stations are needed so that no gap exceeds 'dist'.
+            int numberInBetween = (int) ((arr[i] - arr[i - 1]) / dist);
+
+            // Check if the gap between arr[i-1] and arr[i] is exactly divisible by dist.
+            // If the gap is exactly divisible, we subtract one because we don't need an extra station
+            // for the last segment (it would land exactly on the existing station).
+            if ((arr[i] - arr[i - 1]) == (dist * numberInBetween)) {
+                numberInBetween--;  // Reduce count if the distance is perfectly divisible
+            }
+
+            cnt += numberInBetween;  // Add the required number of stations for this segment
+        }
+
+        return cnt;  // Return total number of new gas stations needed
+    }
+
+    public double minimiseMaxDistance(int[] arr, int k) {
+        int n = arr.length;  // Number of existing gas stations
+
+        // Variables for binary search: low starts at 0, high is the maximum distance between consecutive stations
+        double low = 0;
+        double high = 0;
+
+        // Calculate the maximum distance between any two consecutive gas stations
+        // This will be the upper limit (high) for our binary search.
+        for (int i = 0; i < n - 1; i++) {
+            high = Math.max(high, arr[i + 1] - arr[i]);
+        }
+
+        // diff is the precision we want to achieve in our answer (1e-6 here for accuracy).
+        double diff = 1e-6;
+
+        // Binary search to minimize the maximum distance
+        // We keep searching while the difference between high and low is greater than `diff`.
+        while (high - low > diff) {
+            // Midpoint between low and high (this is the maximum allowed distance we are testing).
+            double mid = (low + high) / 2.0;
+
+            // Calculate how many new gas stations are required if the maximum allowed distance is `mid`.
+            int cnt = numberOfGasStationsRequired(mid, arr);
+
+            // If we need more gas stations than `k`, it means the allowed distance `mid` is too small.
+            // So, we increase the minimum distance (low).
+            if (cnt > k) {
+                low = mid;  // We need fewer stations, so we increase the allowed distance
+            } else {
+                // If we can fit the gas stations with `k` or fewer, we try to minimize the distance further.
+                high = mid;  // Decrease the maximum allowed distance
+            }
+
+            // Example Intuition:
+            // arr = [0, 10], k = 1
+            // Initially, high = 10 (max distance between any two consecutive stations).
+            // Let's say mid = 5. How many new stations do we need if the maximum allowed distance is 5?
+            // Between 0 and 10, we can place 1 new station to ensure no gap is greater than 5.
+            // If k = 1, this is valid, so we will try to minimize the distance further.
+            // If we needed more than k new stations, we would increase `low` to try allowing a greater distance.
+        }
+
+        // At the end, `high` holds the minimized maximum distance, which is our answer.
+        return high;
+    }
+
+    // when dividing the array into exactly 'numPartitions' subarrays.
+    public int largestSubArraySumMinimized(int[] array, int numPartitions) {
+        int result = -1;  // Store the minimized largest subarray sum
+
+        // If the number of partitions is greater than the length of the array,
+        // it's not possible to partition the array properly.
+        if (numPartitions > array.length) {
+            return result;  // Return -1 to indicate invalid partitioning
+        }
+
+        // The minimum possible value for the largest sum is the maximum element of the array.
+        // This is because no partition can have a sum less than the largest element in the array.
+        int maxElement = Arrays.stream(array).max().getAsInt();
+
+        // The maximum possible value for the largest sum is the total sum of the array.
+        // This happens when we put all elements into one partition.
+        int totalSum = Arrays.stream(array).sum();
+
+        // Binary search to find the minimized largest sum.
+        // We search between the maxElement (smallest possible largest sum)
+        // and totalSum (largest possible largest sum).
+        while (maxElement <= totalSum) {
+            // Midpoint of current search range
+            // This represents a candidate for the maximum sum of any partition.
+            int mid = maxElement + (totalSum - maxElement) / 2;
+
+            // Check if we can partition the array with this 'mid' as the largest sum
+            // If the number of partitions required is <= numPartitions, it means this is a valid division.
+            if (canDivideArray(array, mid) <= numPartitions) {
+                // If the array can be divided into the required partitions with 'mid' as the largest sum,
+                // we store this as a potential result and continue to search for a smaller largest sum.
+                result = mid;
+
+                // Try to find an even smaller maximum sum by reducing the upper bound (totalSum).
+                totalSum = mid - 1;
+            } else {
+                // If more partitions are needed, it means 'mid' is too small, and we need to increase it.
+                maxElement = mid + 1;
+            }
+
+            // Example intuition:
+            // Suppose the array is [7, 2, 5, 10, 8], and we want to partition it into 2 subarrays.
+            // We start with a range from maxElement (10, the largest element) to totalSum (32).
+            // We try mid = (10 + 32) / 2 = 21. Can we divide the array into 2 subarrays such that
+            // the largest sum is <= 21? Yes, we can do [7, 2, 5] and [10, 8].
+            // We store 21 as the result and then try to minimize it further by checking if we can do better.
+        }
+
+        // Return the minimized largest sum after partitioning the array
+        return result;
+    }
+
+    // Helper function to determine how many partitions are needed if the largest sum per partition is 'maxSumPerPartition'.
+    private int canDivideArray(int[] array, int maxSumPerPartition) {
+        int partitionsRequired = 1;  // Start with 1 partition (at least one partition is required)
+        int currentPartitionSum = array[0];  // Start by adding the first element to the first partition
+
+        // Traverse the array and try to form partitions
+        for (int i = 1; i < array.length; i++) {
+            // If adding the current element to the current partition doesn't exceed the maximum allowed sum,
+            // we add it to the current partition.
+            if (array[i] + currentPartitionSum <= maxSumPerPartition) {
+                currentPartitionSum += array[i];  // Add current element to the current partition
+            } else {
+                // Otherwise, we start a new partition and assign the current element to it.
+                partitionsRequired++;  // Increase the partition count
+                currentPartitionSum = array[i];  // Reset the partition sum with the current element
+            }
+
+            // Example intuition:
+            // Suppose array = [7, 2, 5, 10, 8] and maxSumPerPartition = 21.
+            // We start with the first element 7. The sum of the current partition is 7.
+            // Adding 2 keeps the sum at 9, so we continue.
+            // Adding 5 keeps the sum at 14, so we continue.
+            // Adding 10 would make the sum 24, which exceeds 21, so we create a new partition starting at 10.
+            // Then we add 8 to the new partition. We end up with two partitions: [7, 2, 5] and [10, 8].
+        }
+
+        // Return the total number of partitions required with the current maxSumPerPartition
+        return partitionsRequired;
+    }
 }
