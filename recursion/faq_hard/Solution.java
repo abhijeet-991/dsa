@@ -372,92 +372,91 @@ public class Solution {
     */
     }
 
-    class Solution {
-        public void solveSudoku(char[][] board) {
+    public void solveSudoku(char[][] board) {
         /*
             This function initiates the recursive backtracking process to solve the Sudoku puzzle.
             We start from the top-left corner of the board (0,0) and begin placing valid numbers.
         */
-            solveSudokuHelper(board, 0, 0);
-        }
+        solveSudokuHelper(board, 0, 0);
+    }
 
-        private boolean solveSudokuHelper(char[][] board, int row, int col) {
+    private boolean solveSudokuHelper(char[][] board, int row, int col) {
         /*
             ******************* Base Case *******************
             - If we reach the last row and column, the board is solved, so return true.
             - This triggers the backtracking to stop.
         */
-            if (row == 9) {
-                return true; // Puzzle is successfully solved
-            }
+        if (row == 9) {
+            return true; // Puzzle is successfully solved
+        }
 
-            // Move to the next row if we finish the current row
-            if (col == 9) {
-                return solveSudokuHelper(board, row + 1, 0);
-            }
+        // Move to the next row if we finish the current row
+        if (col == 9) {
+            return solveSudokuHelper(board, row + 1, 0);
+        }
 
         /*
             ******************* Skip Filled Cells *******************
             If the current cell is already filled, move to the next cell by calling the function
             with updated row and col (col + 1).
         */
-            if (board[row][col] != '.') {
-                return solveSudokuHelper(board, row, col + 1);
-            }
+        if (board[row][col] != '.') {
+            return solveSudokuHelper(board, row, col + 1);
+        }
 
         /*
             ******************* Recursive Exploration *******************
             Try placing digits from '1' to '9' in the current cell.
             If the digit is valid, place it and recursively try to solve the rest of the board.
         */
-            for (char c = '1'; c <= '9'; c++) {
-                if (isValid(board, row, col, c)) {
-                    board[row][col] = c;
+        for (char c = '1'; c <= '9'; c++) {
+            if (isValid(board, row, col, c)) {
+                board[row][col] = c;
 
-                    // Recur to place the next number. If the board is solved, return true.
-                    if (solveSudokuHelper(board, row, col + 1)) {
-                        return true;
-                    }
-
-                    // Backtrack: reset the current cell if the solution is not valid.
-                    board[row][col] = '.';
+                // Recur to place the next number. If the board is solved, return true.
+                if (solveSudokuHelper(board, row, col + 1)) {
+                    return true;
                 }
-            }
 
-            // If no number works, return false to backtrack to the previous cell.
-            return false;
+                // Backtrack: reset the current cell if the solution is not valid.
+                board[row][col] = '.';
+            }
         }
 
-        private boolean isValid(char[][] board, int r, int c, char ch) {
+        // If no number works, return false to backtrack to the previous cell.
+        return false;
+    }
+
+    private boolean isValid(char[][] board, int r, int c, char ch) {
         /*
             ******************* Check Row and Column *******************
             - Check if `ch` is already present in the current row `r` or column `c`.
         */
-            for (int i = 0; i < 9; i++) {
-                if (board[r][i] == ch || board[i][c] == ch) {
-                    return false; // Invalid if the number already exists
-                }
+        for (int i = 0; i < 9; i++) {
+            if (board[r][i] == ch || board[i][c] == ch) {
+                return false; // Invalid if the number already exists
             }
+        }
 
         /*
             ******************* Check 3x3 Subgrid *******************
             - Find the top-left corner of the 3x3 subgrid that contains (r, c).
             - Check if `ch` is present in this subgrid.
         */
-            int subGridRowStart = (r / 3) * 3;
-            int subGridColStart = (c / 3) * 3;
+        int subGridRowStart = (r / 3) * 3;
+        int subGridColStart = (c / 3) * 3;
 
-            for (int i = subGridRowStart; i < subGridRowStart + 3; i++) {
-                for (int j = subGridColStart; j < subGridColStart + 3; j++) {
-                    if (board[i][j] == ch) {
-                        return false; // Invalid if the number already exists in the subgrid
-                    }
+        for (int i = subGridRowStart; i < subGridRowStart + 3; i++) {
+            for (int j = subGridColStart; j < subGridColStart + 3; j++) {
+                if (board[i][j] == ch) {
+                    return false; // Invalid if the number already exists in the subgrid
                 }
             }
-
-            // The digit can be placed safely in the current cell.
-            return true;
         }
+
+        // The digit can be placed safely in the current cell.
+        return true;
+    }
         /*
         ******************* Time Complexity Analysis *******************
         Time Complexity: O(9^(n*n))
@@ -471,8 +470,6 @@ public class Solution {
         - The board itself is mutated in-place, so it doesn't require extra space.
         - The auxiliary space is O(n*n) for the recursion stack depth in the worst case.
     */
-    }
-
 
     /*
        ******************* Helper Method 1: isSafe *******************
