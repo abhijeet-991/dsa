@@ -4,30 +4,32 @@ import java.util.*;
 
 public class Dijkstra {
     public  int[] dijkstra(int V, ArrayList<ArrayList<ArrayList<Integer>>> adj, int S){
-        Queue<int[]> minHeap = new PriorityQueue<>((a, b) -> a[1] - b[1]);
-        minHeap.offer(new int[]{S, 0});
+        Queue<int[]> minHeap = new PriorityQueue<>(Comparator.comparingInt(a -> a[1]));
         int[] distance = new int[V];
         Arrays.fill(distance, Integer.MAX_VALUE);
         distance[S] = 0;
 
+        minHeap.offer(new int[]{S, 0});
+
         while(!minHeap.isEmpty()) {
-            int[] nodeMetadata = minHeap.poll();
-            int currentNode = nodeMetadata[0];
-            int currentNodeDistance = nodeMetadata[1];
+            int[] metadata = minHeap.poll();
+            int currentSourceNode = metadata[0];
+            int currentCostTillThisSource = metadata[1];
 
-            if (currentNodeDistance > distance[currentNode]) continue;
+            if (currentCostTillThisSource > distance[currentSourceNode]) continue;
 
-            ArrayList<ArrayList<Integer>> neighbors = adj.get(currentNode);
-            for (ArrayList<Integer> neighbor : neighbors) {
-                int neighborNode = neighbor.get(0);
-                int distanceToNeighborNode = neighbor.get(1);
+            ArrayList<ArrayList<Integer>> neighborMetadataList = adj.get(currentSourceNode);
+            for (ArrayList<Integer> neighborMetadata : neighborMetadataList) {
 
-                int newDistanceFromCurrentNodeToNeighborNode
-                        = distanceToNeighborNode + currentNodeDistance;
+                int neighborNode = neighborMetadata.get(0);
+                int distanceToThatNeighborNode = neighborMetadata.get(1);
 
-                if (newDistanceFromCurrentNodeToNeighborNode < distance[neighborNode]) {
-                    distance[neighborNode] = newDistanceFromCurrentNodeToNeighborNode;
-                    minHeap.offer(new int[]{neighborNode, distance[neighborNode]});
+                int totalDistanceRequiredToMoveFromSourceToNeighbor = distanceToThatNeighborNode
+                        + currentCostTillThisSource;
+
+                if (totalDistanceRequiredToMoveFromSourceToNeighbor < distance[neighborNode]) {
+                    distance[neighborNode] = totalDistanceRequiredToMoveFromSourceToNeighbor;
+                    minHeap.offer(new int[]{neighborNode, totalDistanceRequiredToMoveFromSourceToNeighbor});
                 }
             }
         }
